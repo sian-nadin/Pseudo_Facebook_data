@@ -53,7 +53,40 @@ The majority of users have been on Facebook for less than 2.5 years. However,
 those that have been on Facebook longer will likely have gained more friends over
 time than the newer users. 
 
+## (ii) User Ages
+Let's see what age groups use Facebook. 
+```{r User Ages}
+summary(pf$age) #give the min and max ages help determine scale for x axis
+qplot(x=age, data=pf, binwidth=1, xlab = "age", 
+      ylab='Number of users in sample',
+      color=I('black'), fill=I('#5760AB')) +
+      scale_x_continuous(breaks = seq(13,113,5)) #seq(0,113,5) goes from 0 to 113 in units of 5 on x axis
+```
+The summary shows the minimum age is 13 and the max is 113. This is useful as you 
+can't use facebook if you're younger than 13 and we're not confident about the 
+data we have for the over 90s are truthful. 
 
+Since the data is quite skewed we'll get the friend count in a log10 scale to get 
+a different perspective of friend count. Log scales allow a large range to be 
+displayed without small values being compressed down into the bottom of the 
+graph. Getting log10 of 0 is undefined so the min - where people have 0 friends 
+would yield a result of negative infinity. In order to avoid this we add 1 to the 
+friend count
+```{r}
+summary(pf$friend_count)
+
+summary(log10(pf$friend_count +1))
+```
+Plot the transformations:
+```{r Add a Scaling Layer}
+p1 <- ggplot(aes(x=friend_count), data=pf) + geom_histogram()
+p2<- p1 + scale_x_log10()
+p3<- p1 + scale_x_sqrt()
+
+# arrange plots in grid
+grid.arrange(p1, p2, p3, ncol=1)
+#Keep in mind this method has the same label for the x axis in all plots but it would be more helpful to know when log10 or sqrt was used in the labels
+```
 
 
 
