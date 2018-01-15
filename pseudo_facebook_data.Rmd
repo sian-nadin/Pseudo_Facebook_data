@@ -21,16 +21,19 @@ names(pf)
 ```
 
 ## Friend count
-Let's see look in to the friend count and see if there's much of a difference in friend count between male and female users. We would like to omit the rows which have 'NA' as their gender by subseting the data to only include the rows that don't have NA as gender.
+Let's look in to the friend count and see if there's much of a difference in 
+friend count between male and female users. We would like to omit the rows which 
+have 'NA' as their gender by subseting the data to only include the rows that 
+don't have NA as gender.
 ```{r Omitting NA Values}
 qplot(x = friend_count, data = subset(pf, !is.na(gender)), binwidth = 10) +
   scale_x_continuous(limits = c(0, 1000),
                      breaks = seq(0, 1000, 50)) +
   facet_wrap(~gender)
 ```
-From this plot it looks like male users have a higher proportion of low friend count 
-than female useers. Let's look at the statistics of friend count by gender to 
-get a clearer idea of the difference in friend count.
+From this plot it looks like male users have a higher proportion of low friend 
+count than female useers. Let's look at the statistics of friend count by gender 
+to get a clearer idea of the difference in friend count.
 ```{r Statistics \'by\' Gender}
 table(pf$gender)
 by(pf$friend_count, pf$gender, summary)
@@ -39,8 +42,9 @@ Both the median and mean friend count for female users is higher than for males.
 The median friend count will be a more robust statistic in this case as extreme 
 outliers may skew the mean friend count. 
 
-Visulaising this with box plots. Adjust the code to focus on users who have 
-friend counts between 0 and 1000.
+Visulaising the differnce in friend count for male and female users using box 
+plots. We will adjust the plot to focus on users who have friend counts between 
+0 and 1000.
 ```{r}
 ggplot(aes(x = gender, y=friend_count), 
        data = subset(pf, !is.na(gender))) +
@@ -67,7 +71,8 @@ the higher end of friend count (300+) male and female users seem to be close.
 Let's look in to some of the factors that might affect friend count.
 
 ### Tenure
-Friend count will be affected by how long a user has been a member of Facebook so let's plot the tenure for Facebook users.
+Friend count will be affected by how long a user has been a member of Facebook 
+so let's plot the tenure for Facebook users.
 ```{r Tenure Histogram by Year}
 qplot(x=tenure/365, data = pf, binwidth=0.25, 
       xlab ='Number of years using Facebook',
@@ -118,7 +123,7 @@ very few users.
 
 We can split up the datframe and apply a function (to find the mean and median)
 to some parts of the data. It can be helpful to not just plot all points but to
-plot against the mean or median friend count for each age as a refernce.
+plot against the mean or median friend count for each age as a reference.
 ```{r Conditional Means}
 #group dataframe by age and store it in age_groups
 age_groups <- group_by(pf, age)
@@ -139,8 +144,8 @@ pf.fc_by_age <- arrange(pf.fc_by_age, age)
 head(pf.fc_by_age)
 ```
 
-Overlay plots of the mean and the 10th, 90th and 50th percent quartile in order to give some more context to the graph.
-
+Overlay plots of the mean and the 10th, 90th and 50th percent quartile in order 
+to give some more context to the graph.
 ```{r Overlaying Summaries with Raw Data}
 library(ggplot2)
 ggplot(aes(x=age, y= friendships_initiated), data = pf) +
@@ -154,6 +159,7 @@ ggplot(aes(x=age, y= friendships_initiated), data = pf) +
 ```
 
 ***
+
 ### Correlation between age and friend count
 If the correlation coefficient is close to 1, it would indicate that the 
 variables are positively linearly related and the scatter plot falls almost 
@@ -161,13 +167,8 @@ along a straight line with positive slope. A rule of thumb is that a correlation
 greater than 0.3 or less than -0.3 is meaningful, but small. around 0.5 is 
 moderatre and 0.7 is large.
 ```{r Correlation}
-#the default method for computing the correlation coefficient is Pearson. You do not need to pass the method parameter when calculating the Pearson Product Moment Correlation.
+#the default method for computing the correlation coefficient is Pearson. 
 cor.test(pf$age, pf$friend_count)
-
-#Another method:
-# The with fxn lets us evaluate an R expression in an environment constructed from the data. 
-# This codde gives the same result as above
-with(pf, cor.test(age, friend_count, method='pearson'))
 ```
 The correlation between age and friend count: -0.027 . This implies that there 
 isn't a meaningful relationship between age and friend count.
@@ -178,7 +179,7 @@ the relationship between age and friend count is not linear. It isn't monotonic,
 either increasing or decreasing. Furthermore, based on the plot we know that we 
 maybe don't want to include the older ages in our correlation number since older 
 ages are likely to be incorrect. 
-Lets redo the plot for users aged 70 or less: 
+Lets redo the correlation calculation for users aged 70 or less: 
 ```{r Correlation on Subsets}
 with(subset(pf, age<=70), cor.test(age, friend_count))
 ```
@@ -210,12 +211,8 @@ old users. We're not really confident about these reported older ages. Users
 reporting age 70 seem to more or less have the same friend count regardless 
 of gender. 
 
-Write code to create a new data frame that contains information on each age AND 
-gender group.
-The data frame should contain the following variables:
-* mean_friend_count
-* median_friend_count
-* n (the number of users in each age and gender grouping)
+We can create a data frame that contains information on each age AND gender 
+group along with the mean and median friend counts.
 ```{r Third Qualitative Variable}
 new_groupings <- group_by(pf, age, gender)
 pf.fc_by_age_gender <- summarise(new_groupings,
@@ -244,12 +241,23 @@ row for each age and then we'll put the median friend count inside of rows for
 males and females. 
 
 ```{r}
-pf.fc_by_age_gender.wide <- dcast(pf.fc_by_age_gender, 
-                                  age ~ gender,
-                                  value.var = 'median_friend_count')
-head(pf.fc_by_age_gender.wide)
+pf.fc_by_age_gender.wide2 <-
+  subset(pf.fc_by_age_gender[c('age', 'gender', 'median_friend_count')],
+         !is.na(gender)) %>%
+  spread(gender, median_friend_count) %>%
+  mutate(ratio = male / female)
 
+head(pf.fc_by_age_gender.wide)
 ```
+
+Plot the ratio of the female to male median friend counts Add a horizontal line 
+to the plot with a y intercept of 1, which will be the base line.
+```{r Ratio Plot}
+ggplot(aes(x=age, y=ratio), data=pf.fc_by_age_gender.wide2) +
+  geom_line() +
+  geom_hline(yintercept = 1, alpha=0.3, linetype=2)
+```
+
 
 ## Putting it all together - Tenure & Age
 For friend count we need to take in to account how long people have been on 
@@ -270,6 +278,7 @@ summary(pf$year_joined)
 #table format of year joined data
 table(pf$year_joined)
 ```
+
 There's not much info on the earlier years - 2005 & 2006. To increase the info
 we have in each tenure category we can group some of this data together. We're 
 going to create 4 bins for the years. The bins will be (i) 2004-2009 
@@ -344,6 +353,8 @@ p4 <- ggplot(aes(x = 90 * round(tenure / 90), y = friendships_initiated / tenure
 grid.arrange(p1, p2, p3, p4, ncol=1)
 
 ```
+
+## Summary
 
 
 
