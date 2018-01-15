@@ -294,11 +294,56 @@ the exception of older users of about 80+.
 We might increase our confidence that this observation isn't just an artefact of 
 the time users have had to accumulate friends. 
 
-We could also look at tenure and friend count as a rate instead. For example we could see how many friends does a user have for each day since using the service. 
+## Friending rate
 
+We could also look at tenure and friend count as a rate instead. 
+For example we could see how many friends does a user have for each day since 
+using the service. 
+Subset the data so you only consider users that have at least one day of tenure
+```{r Friending Rate}
+with(subset(pf, tenure>=1), summary(friend_count/tenure))
+```
 
+Do new users go on  a friending spree? Or do users with greater tenure 
+friend more people? Plot friendships initiated per day vs. tenure. 
+```{r Friendships Initiated}
+ggplot(aes(x = tenure, y = friendships_initiated/tenure),data = subset(pf, tenure>=1)) +
+  geom_line(aes(color = year_joined_bucket), stat = "summary", fun.y = mean) 
+```
+It looks like users with more tenure typically initiate less friendships.
 
+There's a lot of noise in our graph since we're plotting the mean of y for every
+possible tenure x value. We can reduce this noise by increasing the bin width on 
+the x axis. 
 
+```{r Bias-Variance Tradeoff Revisited}
+
+p1 <- ggplot(aes(x = tenure, y = friendships_initiated / tenure),
+       data = subset(pf, tenure >= 1)) +
+  geom_line(aes(color = year_joined_bucket),
+            stat = 'summary',
+            fun.y = mean)
+
+p2 <- ggplot(aes(x = 7 * round(tenure / 7), y = friendships_initiated / tenure),
+       data = subset(pf, tenure > 0)) +
+  geom_line(aes(color = year_joined_bucket),
+            stat = "summary",
+            fun.y = mean)
+
+p3 <- ggplot(aes(x = 30 * round(tenure / 30), y = friendships_initiated / tenure),
+       data = subset(pf, tenure > 0)) +
+  geom_line(aes(color = year_joined_bucket),
+            stat = "summary",
+            fun.y = mean)
+
+p4 <- ggplot(aes(x = 90 * round(tenure / 90), y = friendships_initiated / tenure),
+       data = subset(pf, tenure > 0)) +
+  geom_line(aes(color = year_joined_bucket),
+            stat = "summary",
+            fun.y = mean)
+grid.arrange(p1, p2, p3, p4, ncol=1)
+
+```
 
 
 
