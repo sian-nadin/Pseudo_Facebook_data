@@ -39,6 +39,23 @@ Both the median and mean friend count for female users is higher than for males.
 The median friend count will be a more robust statistic in this case as extreme 
 outliers may skew the mean friend count. 
 
+### Proportion of friend count
+Comparing male and female friend counts in an overlay with a *frequency polygon* 
+rather than two histograms side by side. 
+Change the y axis to show prportions instead of counts.
+
+```{r Frequency Polygons}
+ggplot(aes(x = friend_count, y = ..count../sum(..count..)),
+       data = subset(pf, !is.na(gender))) +
+  geom_freqpoly(aes(color = gender), binwidth=10) +
+  scale_x_continuous(limits = c(0, 1000), breaks = seq(0, 1000, 50)) +
+  xlab('Friend Count') +
+  ylab('Proportion of users with that friend count')
+```
+A higher proportion of male users have a low friend count than women do. Towards 
+the higher end of friend count (300+) male and female users seem to be close.
+We can also try bisualising this with box plots.
+
 Let's look in to some of the factors that might affect friend count.
 
 ### (i) Tenure
@@ -87,6 +104,7 @@ p3<- p1 + scale_x_sqrt()
 grid.arrange(p1, p2, p3, ncol=1)
 #Keep in mind this method has the same label for the x axis in all plots but it would be more helpful to know when log10 or sqrt was used in the labels
 ```
+
 
 
 
