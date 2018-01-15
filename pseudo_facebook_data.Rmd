@@ -152,6 +152,41 @@ ggplot(aes(x=age, y= friendships_initiated), data = pf) +
 # fun.args = list(probs = .9) gives the 90th percent quantile, linetype=2 makes it dashed 
 ```
 
+***
+### Correlation between age and friend count
+If the correlation coefficient is close to 1, it would indicate that the 
+variables are positively linearly related and the scatter plot falls almost 
+along a straight line with positive slope. A rule of thumb is that a correlation 
+greater than 0.3 or less than -0.3 is meaningful, but small. around 0.5 is 
+moderatre and 0.7 is large.
+```{r Correlation}
+#the default method for computing the correlation coefficient is Pearson. You do not need to pass the method parameter when calculating the Pearson Product Moment Correlation.
+cor.test(pf$age, pf$friend_count)
+
+#Another method:
+# The with fxn lets us evaluate an R expression in an environment constructed from the data. 
+# This codde gives the same result as above
+with(pf, cor.test(age, friend_count, method='pearson'))
+```
+The correlation between age and friend count: -0.027 . This implies that there 
+isn't a meaningful relationship between age and friend count.
+
+### Correlation on Subsets
+Based on the correlation co efficient and the above plot we just observed that 
+the relationship between age and friend count is not linear. It isn't monotonic, 
+either increasing or decreasing. Furthermore, based on the plot we know that we 
+maybe don't want to include the older ages in our correlation number since older 
+ages are likely to be incorrect. 
+Lets redo the plot for users aged 70 or less: 
+```{r Correlation on Subsets}
+with(subset(pf, age<=70), cor.test(age, friend_count))
+```
+This tells a different story about a negative relationship between age and 
+friend count. As age increases friend count decreases. The pearson product 
+measures the strength of a relationship between any two variables. But there can
+be lots of other types of relationships. 
+
+***
 
 
 
