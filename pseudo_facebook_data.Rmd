@@ -66,7 +66,7 @@ the higher end of friend count (300+) male and female users seem to be close.
 
 Let's look in to some of the factors that might affect friend count.
 
-### (i) Tenure
+### Tenure
 Friend count will be affected by how long a user has been a member of Facebook so let's plot the tenure for Facebook users.
 ```{r Tenure Histogram by Year}
 qplot(x=tenure/365, data = pf, binwidth=0.25, 
@@ -78,7 +78,8 @@ The majority of users have been on Facebook for less than 2.5 years. However,
 those that have been on Facebook longer will likely have gained more friends over
 time than the newer users. 
 
-## (ii) User Ages
+
+## User Ages
 Let's see what age groups use Facebook. 
 ```{r User Ages}
 summary(pf$age) #give the min and max ages help determine scale for x axis
@@ -152,26 +153,6 @@ ggplot(aes(x=age, y= friendships_initiated), data = pf) +
 # fun.args = list(probs = .9) gives the 90th percent quantile, linetype=2 makes it dashed 
 ```
 
-Boxplot of ages by gender. Here we can see the averages by a shape marked 'x'. 
-Since male users are a bit younger we might think a simple male to female 
-comparison doesn't capture the substantial differences in friend count.  
-```{r}
-ggplot(aes(x=gender, y=age), data= subset(pf, !is.na(gender))) + geom_boxplot() +
-  stat_summary(fun.y=mean, geom = 'point', shape=4)
-```
-
-Lets make a graph of median friend count:
-```{r}
-ggplot(aes(x = age, y = friend_count),
-       data = subset(pf, !is.na(gender))) + 
-  geom_line( aes(color=gender), stat='summary', fun.y=median)
-```
-We can see that nearly everywhere the median friend count is larger for women 
-than it is for men. There are some exceptions which include the noise around the 
-old users. We're not really confident about these reported older ages. Users 
-reporting age 70 seem to more or less have the same friend count regardless 
-of gender. 
-
 ***
 ### Correlation between age and friend count
 If the correlation coefficient is close to 1, it would indicate that the 
@@ -208,8 +189,112 @@ be lots of other types of relationships.
 
 ***
 
+### Comparing age, gender and friend count
+Boxplot of ages by gender. Here we can see the averages by a shape marked 'x'. 
+Since male users are a bit younger we might think a simple male to female 
+comparison doesn't capture the substantial differences in friend count.  
+```{r}
+ggplot(aes(x=gender, y=age), data= subset(pf, !is.na(gender))) + geom_boxplot() +
+  stat_summary(fun.y=mean, geom = 'point', shape=4)
+```
 
+Lets make a graph of median friend count:
+```{r}
+ggplot(aes(x = age, y = friend_count),
+       data = subset(pf, !is.na(gender))) + 
+  geom_line( aes(color=gender), stat='summary', fun.y=median)
+```
+We can see that nearly everywhere the median friend count is larger for women 
+than it is for men. There are some exceptions which include the noise around the 
+old users. We're not really confident about these reported older ages. Users 
+reporting age 70 seem to more or less have the same friend count regardless 
+of gender. 
 
+Write code to create a new data frame that contains information on each age AND 
+gender group.
+The data frame should contain the following variables:
+* mean_friend_count
+* median_friend_count
+* n (the number of users in each age and gender grouping)
+```{r Third Qualitative Variable}
+new_groupings <- group_by(pf, age, gender)
+pf.fc_by_age_gender <- summarise(new_groupings,
+                                 mean_friend_count = mean(friend_count),
+                                 median_friend_count = median(friend_count),
+                                 n=n())
+head(pf.fc_by_age_gender)
+```
+
+```{r Plotting Conditional Summaries}
+ggplot(aes(x=age, y=median_friend_count), data = subset(pf.fc_by_age_gender, !is.na(gender))) +
+  geom_line(aes(color=gender))
+```
+It seems like the largest difference between friend count for male and female
+occurs between young users. 
+
+***
+
+### Thinking in Ratios
+Let's answer the question how many more times friends does the average female 
+user have than the male user. To answer that question we need to reshape our 
+data. Right now the data is in long format. We have many rows and the variables 
+that we grouped over, male and female, have been repeated for each year. 
+Let's convert from long format to wide format. This new dataframe will have one 
+row for each age and then we'll put the median friend count inside of rows for 
+males and females. 
+
+```{r}
+pf.fc_by_age_gender.wide <- dcast(pf.fc_by_age_gender, 
+                                  age ~ gender,
+                                  value.var = 'median_friend_count')
+head(pf.fc_by_age_gender.wide)
+
+```
+
+## Putting it all together - Tenure & Age
+For friend count we need to take in to account how long people have been on 
+Facebook as someone who's been using it for a long time will likely have gained 
+more friends. This data was collected in 2014 so we're going to take that in to 
+account.
+Create a variable called year_joined in the data frame using the variable tenure 
+and 2014 as the reference year. 
+Tenure variable = how many days since registering with Facebook. 
+```{r Third Quantitative Variable}
+pf$year_joined <- floor(2014-pf$tenure/365) 
+# the floor() function to round down to the nearest integer
+```
+
+Let's  look at a summary of the data on year joined
+```{r}
+summary(pf$year_joined)
+#table format of year joined data
+table(pf$year_joined)
+```
+There's not much info on the earlier years - 2005 & 2006. To increase the info
+we have in each tenure category we can group some of this data together. We're 
+going to create 4 bins for the years. The bins will be (i) 2004-2009 
+(ii) 2009 - 2011 (iii) 2011 - 2012 (iv) 2012 - 2014
+```{r Cut a Variable}
+pf$year_joined_bucket <- cut(pf$year_joined, c(2004, 2009, 2011, 2012, 2014))
+table(pf$year_joined_bucket)
+```
+
+We can graph friend_count vs. age so that each year_joined.bucket is a line 
+tracking the median user friend_count across age. To put these cohorts in to 
+prespective we can plot the grand mean on here as well. The grand mean is the 
+overall mean of friend count vs age.
+```{r Plotting it All Together}
+ggplot(aes(x = age, y = friend_count),
+       data = subset(pf, !is.na(year_joined_bucket))) +
+  geom_line(aes(color = year_joined_bucket), stat = 'summary', fun.y = mean) +
+  geom_line(stat = 'summary', fun.y = mean, linetype=2)
+```
+We can see that users with longer tenure tend to have  higher friend counts with 
+the exception of older users of about 80+. 
+We might increase our confidence that this observation isn't just an artefact of 
+the time users have had to accumulate friends. 
+
+We could also look at tenure and friend count as a rate instead. For example we could see how many friends does a user have for each day since using the service. 
 
 
 
