@@ -115,8 +115,42 @@ With this plot it's much easier to see the distribution of friend count
 conditional on age. For example we can see threshold count above which there are 
 very few users.
 
+We can split up the datframe and apply a function (to find the mean and median)
+to some parts of the data. It can be helpful to not just plot all points but to
+plot against the mean or median friend count for each age as a refernce.
+```{r Conditional Means}
+#group dataframe by age and store it in age_groups
+age_groups <- group_by(pf, age)
 
+# summarise this new grouping of data and create new variables of mean
+# friend count, median friend count & the number of people in each group
+# Save all of this in a new variable pf.fc_by_age
+pf.fc_by_age <- summarise(age_groups, 
+          friend_count_mean = mean(friend_count),
+          friend_count_median = median(friend_count),
+          n = n()) #number of users in each group. 
+# n fxn can only be used in summarise and it reports how many people are in each group
 
+#Order data by age
+pf.fc_by_age <- arrange(pf.fc_by_age, age)
+
+#print first few rows of dataframe
+head(pf.fc_by_age)
+```
+
+Overlay plots of the mean and the 10th, 90th and 50th percent quartile in order to give some more context to the graph.
+
+```{r Overlaying Summaries with Raw Data}
+library(ggplot2)
+ggplot(aes(x=age, y= friendships_initiated), data = pf) +
+  geom_point(alpha = 1/10, position = position_jitter(h=0), color='orange') +
+  coord_cartesian(xlim = c(13, 90), ylim = c(0, 1000)) +
+  geom_line(stat = 'summary', fun.y = mean) +
+  geom_line(stat= 'summary', fun.y = quantile, fun.args = list(probs = .1), linetype =2, color='blue') +
+  geom_line(stat= 'summary', fun.y = quantile, fun.args = list(probs = .9), linetype =2, color='blue') +
+  geom_line(stat= 'summary', fun.y = quantile, fun.args = list(probs = .5), color='blue')
+# fun.args = list(probs = .9) gives the 90th percent quantile, linetype=2 makes it dashed 
+```
 
 
 
