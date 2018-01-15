@@ -152,6 +152,26 @@ ggplot(aes(x=age, y= friendships_initiated), data = pf) +
 # fun.args = list(probs = .9) gives the 90th percent quantile, linetype=2 makes it dashed 
 ```
 
+Boxplot of ages by gender. Here we can see the averages by a shape marked 'x'. 
+Since male users are a bit younger we might think a simple male to female 
+comparison doesn't capture the substantial differences in friend count.  
+```{r}
+ggplot(aes(x=gender, y=age), data= subset(pf, !is.na(gender))) + geom_boxplot() +
+  stat_summary(fun.y=mean, geom = 'point', shape=4)
+```
+
+Lets make a graph of median friend count:
+```{r}
+ggplot(aes(x = age, y = friend_count),
+       data = subset(pf, !is.na(gender))) + 
+  geom_line( aes(color=gender), stat='summary', fun.y=median)
+```
+We can see that nearly everywhere the median friend count is larger for women 
+than it is for men. There are some exceptions which include the noise around the 
+old users. We're not really confident about these reported older ages. Users 
+reporting age 70 seem to more or less have the same friend count regardless 
+of gender. 
+
 ***
 ### Correlation between age and friend count
 If the correlation coefficient is close to 1, it would indicate that the 
@@ -187,6 +207,7 @@ measures the strength of a relationship between any two variables. But there can
 be lots of other types of relationships. 
 
 ***
+
 
 
 
