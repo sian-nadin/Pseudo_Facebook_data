@@ -39,6 +39,15 @@ Both the median and mean friend count for female users is higher than for males.
 The median friend count will be a more robust statistic in this case as extreme 
 outliers may skew the mean friend count. 
 
+Visulaising this with box plots. Adjust the code to focus on users who have 
+friend counts between 0 and 1000.
+```{r}
+ggplot(aes(x = gender, y=friend_count), 
+       data = subset(pf, !is.na(gender))) +
+  geom_boxplot() +
+  coord_cartesian(ylim=c(0,1000))
+```
+
 ### Proportion of friend count
 Comparing male and female friend counts in an overlay with a *frequency polygon* 
 rather than two histograms side by side. 
@@ -54,7 +63,6 @@ ggplot(aes(x = friend_count, y = ..count../sum(..count..)),
 ```
 A higher proportion of male users have a low friend count than women do. Towards 
 the higher end of friend count (300+) male and female users seem to be close.
-We can also try bisualising this with box plots.
 
 Let's look in to some of the factors that might affect friend count.
 
@@ -83,27 +91,30 @@ The summary shows the minimum age is 13 and the max is 113. This is useful as yo
 can't use facebook if you're younger than 13 and we're not confident about the 
 data we have for the over 90s are truthful. 
 
-Since the data is quite skewed we'll get the friend count in a log10 scale to get 
-a different perspective of friend count. Log scales allow a large range to be 
-displayed without small values being compressed down into the bottom of the 
-graph. Getting log10 of 0 is undefined so the min - where people have 0 friends 
-would yield a result of negative infinity. In order to avoid this we add 1 to the 
-friend count
-```{r}
-summary(pf$friend_count)
+Now let's see if friend count varies by the age of users on Facebook.
+```{r Scatterplots}
+ggplot(aes(x=age, y=friend_count), data =pf) + geom_jitter(alpha=1/20) + 
+  xlim(13, 90)
 
-summary(log10(pf$friend_count +1))
+summary(pf$age)
 ```
-Plot the transformations:
-```{r Add a Scaling Layer}
-p1 <- ggplot(aes(x=friend_count), data=pf) + geom_histogram()
-p2<- p1 + scale_x_log10()
-p3<- p1 + scale_x_sqrt()
+* There are vertical bars where people have lied about their age - e.g. 69 and 
+100. These users are likely to be teenagers or fake accounts given the huge 
+friend counts.
+* The users with the most friends are typically under 30.
+* The bulk of young users have friend count below 1000.
 
-# arrange plots in grid
-grid.arrange(p1, p2, p3, ncol=1)
-#Keep in mind this method has the same label for the x axis in all plots but it would be more helpful to know when log10 or sqrt was used in the labels
+Transform the plot using square root:
+```{r Coord_trans()}
+ggplot(aes(x=age, y=friend_count), data =pf) + 
+  geom_point(alpha=1/20, position = position_jitter(h=0)) + 
+  xlim(13, 90) +
+  coord_trans(y = 'sqrt') #transform y axis to square root values
 ```
+With this plot it's much easier to see the distribution of friend count 
+conditional on age. For example we can see threshold count above which there are 
+very few users.
+
 
 
 
