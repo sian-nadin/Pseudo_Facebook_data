@@ -2,6 +2,16 @@
 title: "Pseudo_Facebook_data"
 output: html_document
 ---
+```{r}
+#install.packages('ggplot2')
+library(ggplot2)
+#install.packages('gridExtra')
+library(gridExtra)
+#install.packages('dplyr')
+library(dplyr)
+#install.packages('reshape2')
+library(reshape2)
+```
 
 Read in the psuedo Facebook data.
 ```{r}
@@ -9,3 +19,49 @@ Read in the psuedo Facebook data.
 pf <- read.csv('pseudo_facebook.tsv', sep = '\t')
 names(pf)
 ```
+
+## Friend count
+Let's see look in to the friend count and see if there's much of a difference in friend count between male and female users. We would like to omit the rows which have 'NA' as their gender by subseting the data to only include the rows that don't have NA as gender.
+```{r Omitting NA Values}
+qplot(x = friend_count, data = subset(pf, !is.na(gender)), binwidth = 10) +
+  scale_x_continuous(limits = c(0, 1000),
+                     breaks = seq(0, 1000, 50)) +
+  facet_wrap(~gender)
+```
+From this plot it looks like male users have a higher proportion of low friend count 
+than female useers. Let's look at the statistics of friend count by gender to 
+get a clearer idea of the difference in friend count.
+```{r Statistics \'by\' Gender}
+table(pf$gender)
+by(pf$friend_count, pf$gender, summary)
+```
+Both the median and mean friend count for female users is higher than for males. 
+The median friend count will be a more robust statistic in this case as extreme 
+outliers may skew the mean friend count. 
+
+Let's look in to some of the factors that might affect friend count.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
