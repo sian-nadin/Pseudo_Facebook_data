@@ -41,7 +41,17 @@ outliers may skew the mean friend count.
 
 Let's look in to some of the factors that might affect friend count.
 
-
+### (i) Tenure
+Friend count will be affected by how long a user has been a member of Facebook so let's plot the tenure for Facebook users.
+```{r Tenure Histogram by Year}
+qplot(x=tenure/365, data = pf, binwidth=0.25, 
+      xlab ='Number of years using Facebook',
+      ylab='Number of users in sample',
+      color=I('black'), fill=I('#F79420') )
+```
+The majority of users have been on Facebook for less than 2.5 years. However, 
+those that have been on Facebook longer will likely have gained more friends over
+time than the newer users. 
 
 
 
