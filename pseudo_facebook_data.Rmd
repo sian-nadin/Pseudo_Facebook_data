@@ -1,0 +1,11 @@
+---
+title: "Pseudo_Facebook_data"
+output: html_document
+---
+
+Read in the psuedo Facebook data.
+```{r}
+#use sep to indicate file is tab seperated
+pf <- read.csv('pseudo_facebook.tsv', sep = '\t')
+names(pf)
+```
