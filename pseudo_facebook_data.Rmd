@@ -9,6 +9,8 @@ library(ggplot2)
 library(gridExtra)
 #install.packages('dplyr')
 library(dplyr)
+#install.packages('tidyr')
+library(tidyr)
 #install.packages('reshape2')
 library(reshape2)
 ```
@@ -247,7 +249,7 @@ pf.fc_by_age_gender.wide2 <-
   spread(gender, median_friend_count) %>%
   mutate(ratio = male / female)
 
-head(pf.fc_by_age_gender.wide)
+head(pf.fc_by_age_gender.wide2)
 ```
 
 Plot the ratio of the female to male median friend counts Add a horizontal line 
